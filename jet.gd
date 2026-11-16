@@ -172,6 +172,7 @@ func _start_flight() -> void:
 	gear = true
 	_sync()
 func _ready() -> void:
+func _ready() -> void:
 	var col = CollisionShape3D.new()
 	var bs = BoxShape3D.new()
 	bs.size = Vector3(5, 1.5, 9)
@@ -193,8 +194,8 @@ func _ready() -> void:
 	menu_ui = Control.new()
 	menu_ui.set_anchors_preset(Control.PRESET_FULL_RECT)
 	cv.add_child(menu_ui)
-	_lb(menu_ui, Control.PRESET_CENTER_TOP, Vector4(-450, 30, 450, 95), gold, 32, HORIZONTAL_ALIGNMENT_CENTER).text = "SKYWARD FLIGHT SIMULATOR"
-	menu_lbl = _lb(menu_ui, Control.PRESET_CENTER_BOTTOM, Vector4(-480, -210, 480, -30), Color.WHITE, 20, HORIZONTAL_ALIGNMENT_CENTER)
+	_lb(menu_ui, Control.PRESET_CENTER_TOP, Vector4(-450, 24, 450, 90), gold, 32, HORIZONTAL_ALIGNMENT_CENTER).text = "SKYWARD FLIGHT SIMULATOR"
+	menu_lbl = _lb(menu_ui, Control.PRESET_CENTER_BOTTOM, Vector4(-480, -195, 480, -25), Color.WHITE, 20, HORIZONTAL_ALIGNMENT_CENTER)
 
 	flight_ui = Control.new()
 	flight_ui.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -204,55 +205,69 @@ func _ready() -> void:
 	_lb(flight_ui, Control.PRESET_CENTER, Vector4(-60, -20, 60, 20), grn, 24, HORIZONTAL_ALIGNMENT_CENTER).text = "---( + )---"
 	hw = _lb(flight_ui, Control.PRESET_CENTER_TOP, Vector4(-320, 36, 320, 85), Color(1, 0.25, 0.2), 20, HORIZONTAL_ALIGNMENT_CENTER)
 
-	var wr = get_tree().root
-	var rng = RandomNumberGenerator.new()
-	rng.seed = 2026
+	var world = Node3D.new()
+	get_parent().call_deferred("add_child", world)
+
 	sky_mat = ProceduralSkyMaterial.new()
-	sky_mat.sky_top_color = Color(0.08, 0.28, 0.72)
-	sky_mat.sky_horizon_color = Color(0.66, 0.82, 0.96)
+	sky_mat.sky_top_color = Color(0.12, 0.42, 0.88)
+	sky_mat.sky_horizon_color = Color(0.68, 0.85, 0.98)
 	var sky = Sky.new()
 	sky.sky_material = sky_mat
 	var env = Environment.new()
 	env.background_mode = Environment.BG_SKY
 	env.sky = sky
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	env.fog_enabled = true
-	env.fog_light_color = Color(0.68, 0.83, 0.96)
-	env.fog_density = 0.00008
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	env.ambient_light_color = Color(0.65, 0.75, 0.88)
+	env.ambient_light_energy = 0.85
 	var we = WorldEnvironment.new()
 	we.environment = env
-	wr.add_child(we)
+	world.add_child(we)
 
 	sun = DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-45, 30, 0)
-	sun.light_energy = 1.25
-	wr.add_child(sun)
+	sun.light_energy = 1.4
+	world.add_child(sun)
+
+	# 3D Hangar around spawn point (Z = 120) with open doors facing runway (-Z)
+	var h_wall = _mat(Color(0.28, 0.32, 0.38), 0.4)
+	var h_stripe = _mat(Color(0.95, 0.65, 0.1), 0.0, true)
+	_bx(world, Vector3(36, 0.2, 34), Vector3(0, 0.1, 120), _mat(Color(0.22, 0.24, 0.27)))
+	_bx(world, Vector3(1.2, 15, 34), Vector3(-18, 7.5, 120), h_wall)
+	_bx(world, Vector3(1.2, 15, 34), Vector3(18, 7.5, 120), h_wall)
+	_bx(world, Vector3(36, 15, 1.2), Vector3(0, 7.5, 137), h_wall)
+	_bx(world, Vector3(38, 1.2, 35), Vector3(0, 15.2, 120), h_wall)
+	_bx(world, Vector3(36, 0.5, 0.5), Vector3(0, 14.2, 103), h_stripe)
+	var h_light = OmniLight3D.new()
+	h_light.position = Vector3(0, 12.5, 118)
+	h_light.omni_range = 45.0
+	h_light.light_energy = 3.5
+	world.add_child(h_light)
 
 	var pm1 = PlaneMesh.new()
 	pm1.size = Vector2(160000, 160000)
-	_mk(wr, pm1, Vector3(0, -0.5, 0), _mat(Color(0.06, 0.24, 0.48)))
+	_mk(world, pm1, Vector3(0, -0.5, 0), _mat(Color(0.06, 0.28, 0.55)))
 	var pm2 = PlaneMesh.new()
 	pm2.size = Vector2(100000, 100000)
-	_mk(wr, pm2, Vector3.ZERO, _mat(Color(0.2, 0.4, 0.22)))
+	_mk(world, pm2, Vector3.ZERO, _mat(Color(0.22, 0.48, 0.25)))
 
 	var drk = _mat(Color(0.13, 0.14, 0.16))
-	var wht = _mat(Color(0.95, 0.95, 0.95), 0, true)
-	_bx(wr, Vector3(50, 0.5, 2400), Vector3(0, 0.25, -900), drk)
-	_bx(wr, Vector3(50, 0.5, 2400), Vector3(14000, 0.25, -22000), drk, Vector3(0, 45, 0))
-	_bx(wr, Vector3(18, 45, 18), Vector3(65, 22.5, -800), _mat(Color(0.4, 0.45, 0.5)))
-	for z in range(-2050, 250, 90):
-		_bx(wr, Vector3(1.5, 0.6, 35), Vector3(0, 0.3, float(z)), wht)
-
+	_bx(world, Vector3(50, 0.5, 2400), Vector3(0, 0.25, -900), drk)
+	_bx(world, Vector3(50, 0.5, 2400), Vector3(14000, 0.25, -22000), drk, Vector3(0, 45, 0))
+	_bx(world, Vector3(18, 45, 18), Vector3(65, 22.5, -800), _mat(Color(0.45, 0.5, 0.56)))
+	for z in range(-2050, 90, 90):
+		_bx(world, Vector3(1.5, 0.6, 35), Vector3(0, 0.3, float(z)), _mat(Color(0.95, 0.95, 0.95), 0, true))
+	var rng = RandomNumberGenerator.new()
+	rng.seed = 2026
 	for i in range(55):
 		var bx_x = rng.randf_range(900.0, 4500.0)
 		var bx_z = rng.randf_range(-6500.0, -1800.0)
 		var bh = rng.randf_range(80.0, 460.0)
 		var bw = rng.randf_range(65.0, 160.0)
-		_bx(wr, Vector3(bw, bh, bw), Vector3(bx_x, bh * 0.5, bx_z), _mat(Color(0.25, 0.32, 0.42), 0.7))
+		_bx(world, Vector3(bw, bh, bw), Vector3(bx_x, bh * 0.5, bx_z), _mat(Color(0.3, 0.38, 0.5), 0.7))
 
-	var mm = _mat(Color(0.28, 0.33, 0.3))
-	var ms = _mat(Color(0.92, 0.95, 0.98))
-	var mc = _mat(Color(1, 1, 1), 0, false, 0.82)
+	var mm = _mat(Color(0.32, 0.38, 0.34))
+	var ms = _mat(Color(0.94, 0.96, 0.99))
+	var mc = _mat(Color(1, 1, 1), 0, false, 0.85)
 	for i in range(70):
 		var mx = rng.randf_range(-42000, 42000)
 		var mz = rng.randf_range(-42000, 42000)
@@ -261,12 +276,12 @@ func _ready() -> void:
 		var h = rng.randf_range(600, 2600)
 		var w = rng.randf_range(1600, 4200)
 		var ry = rng.randf_range(0, 360)
-		_pr(wr, Vector3(w, h, w), Vector3(mx, h * 0.48, mz), mm, Vector3(0, ry, 0))
+		_pr(world, Vector3(w, h, w), Vector3(mx, h * 0.48, mz), mm, Vector3(0, ry, 0))
 		if h > 1200:
-			_pr(wr, Vector3(w * 0.42, h * 0.42, w * 0.42), Vector3(mx, h * 0.76, mz), ms, Vector3(0, ry, 0))
+			_pr(world, Vector3(w * 0.42, h * 0.42, w * 0.42), Vector3(mx, h * 0.76, mz), ms, Vector3(0, ry, 0))
 
 	for i in range(95):
-		_bx(wr, Vector3(rng.randf_range(600, 2200), rng.randf_range(60, 180), rng.randf_range(600, 2200)), Vector3(rng.randf_range(-35000, 35000), rng.randf_range(1400, 3200), rng.randf_range(-35000, 35000)), mc)
+		_bx(world, Vector3(rng.randf_range(600, 2200), rng.randf_range(60, 180), rng.randf_range(600, 2200)), Vector3(rng.randf_range(-35000, 35000), rng.randf_range(1400, 3200), rng.randf_range(-35000, 35000)), mc)
 
 	var ring_mat = _mat(gold, 0, true)
 	for i in range(20):
@@ -276,7 +291,7 @@ func _ready() -> void:
 		_bx(rg, Vector3(95, 6, 6), Vector3(0, -45, 0), ring_mat)
 		_bx(rg, Vector3(6, 95, 6), Vector3(-45, 0, 0), ring_mat)
 		_bx(rg, Vector3(6, 95, 6), Vector3(45, 0, 0), ring_mat)
-		wr.add_child(rg)
+		world.add_child(rg)
 		rings.append(rg)
 
 	_enter_menu()
@@ -287,9 +302,9 @@ func _physics_process(delta: float) -> void:
 		prop.rotate_z(25.0 * delta * max(0.2, thr))
 
 	if state == "MENU":
-		orbit += 0.55 * delta
-		cam.position = Vector3(sin(orbit) * 14.0, 4.2, cos(orbit) * 14.0)
-		cam.look_at(global_position + Vector3(0, 0.8, 0), Vector3.UP)
+		orbit += 0.5 * delta
+		cam.position = Vector3(sin(orbit) * 10.5, 3.8, cos(orbit) * 10.5)
+		cam.look_at(global_position + Vector3(0, 0.9, -2.0), Vector3.UP)
 		if cd == 0.0:
 			if Input.is_action_just_pressed("ui_right") or Input.is_key_pressed(KEY_D):
 				sel = (sel + 1) % PLANES.size()
@@ -303,7 +318,7 @@ func _physics_process(delta: float) -> void:
 				_start_flight()
 				cd = 0.3
 		var p = PLANES[sel]
-		menu_lbl.text = "< [A / D] SELECT AIRCRAFT (%d/%d) >\n\n%s\nTOP SPEED: %d KTS   |   STALL: %d KTS\n\nPRESS [ENTER] OR [SPACE] TO LAUNCH ON RUNWAY" % [sel + 1, PLANES.size(), p["name"], int(p["ab"] * 1.94), int(p["stall"] * 1.94)]
+		menu_lbl.text = "< [A / D] SELECT AIRCRAFT (%d/%d) >\n\n%s\nTOP SPEED: %d KTS   |   STALL: %d KTS\n\nPRESS [ENTER] OR [SPACE] TO LAUNCH OUT OF HANGAR" % [sel + 1, PLANES.size(), p["name"], int(p["ab"] * 1.94), int(p["stall"] * 1.94)]
 		return
 
 	if cd == 0.0:
@@ -328,8 +343,8 @@ func _physics_process(delta: float) -> void:
 		elif Input.is_key_pressed(KEY_T):
 			tod = fmod(tod + 0.25, 1.0)
 			sun.rotation_degrees.x = lerp(-15.0, -165.0, tod)
-			sun.light_energy = 0.25 if tod > 0.7 else 1.25
-			sky_mat.sky_top_color = Color(0.02, 0.04, 0.14) if tod > 0.7 else Color(0.08, 0.28, 0.72)
+			sun.light_energy = 0.3 if tod > 0.7 else 1.4
+			sky_mat.sky_top_color = Color(0.02, 0.04, 0.14) if tod > 0.7 else Color(0.12, 0.42, 0.88)
 			cd = 0.25
 
 	for rg in rings:
@@ -394,3 +409,5 @@ func _physics_process(delta: float) -> void:
 	hl.text = "=== %s ===\nIAS: %d KTS (MACH %.2f)\nALT: %d FT | V/S: %+d FPM\nHDG: %03d° | %.1f G\nRINGS: %d / 20" % [p["name"], int(spd * 1.94384), mach, int(global_position.y * 3.28084), vs, int(fposmod(-rad_to_deg(rotation.y), 360.0)), gl, score]
 	hr.text = "=== SYSTEMS ===\nTHR: %d%% | GEAR [G]: %s | FLAPS [F]: %s\nAUTOPILOT [P]: %s | VIEW [C]: %s\n[T] Time of Day | [M] Hangar Menu\n[Shift/Ctrl] Thr | [Hold X] Boost" % [int(thr * 100), "DN" if gear else "UP", "DN" if flaps else "UP", "ON" if ap else "OFF", "PIT" if pit else "EXT"]
 	hw.text = "⚠ STALL WARNING ⚠" if (spd < stall and global_position.y > 6.0) else ("⚠ TERRAIN PULL UP ⚠" if (global_position.y < 65.0 and vs < -1500) else ("⚠ DEPLOY GEAR [G] ⚠" if (global_position.y < 15.0 and not gear and spd > 20.0) else (">>> HYPERSONIC MACH %.2f <<<" % mach if scram else "")))
+
+	
