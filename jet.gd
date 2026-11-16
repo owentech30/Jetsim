@@ -92,7 +92,7 @@ func _ready() -> void:
 	_cy(self, 0.65, 0.82, 6.2, Vector3(0, 0, 0.4), hull, Vector3(90, 0, 0))
 	_cy(self, 0.02, 0.65, 3.4, Vector3(0, -0.05, -4.4), trim, Vector3(90, 0, 0))
 	_cy(self, 0.32, 0.48, 2.6, Vector3(0, 0.55, -1.7), gls, Vector3(84, 0, 0))
-	_pr(self, 1.5, 3.8, 0.85, Vector3(0, 0.25, -2.2), hull, Vector3(-90, 0, 0))
+	_pr(self, Vector3(1.5, 3.8, 0.85), Vector3(0, 0.25, -2.2), hull, Vector3(-90, 0, 0))
 	_bx(self, Vector3(0.75, 0.45, 3.8), Vector3(0, 0.45, 1.1), hull)
 
 	for s in [-1.0, 1.0]:
