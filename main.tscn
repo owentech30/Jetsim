@@ -1,12 +1,13 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://jet.gd" id="1_jet"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
-sky_top_color = Color(0.18, 0.45, 0.85, 1)
-sky_horizon_color = Color(0.65, 0.8, 0.95, 1)
-ground_bottom_color = Color(0.15, 0.25, 0.15, 1)
-ground_horizon_color = Color(0.4, 0.55, 0.4, 1)
+sky_top_color = Color(0.11, 0.34, 0.78, 1)
+sky_horizon_color = Color(0.68, 0.83, 0.96, 1)
+ground_bottom_color = Color(0.12, 0.24, 0.38, 1)
+ground_horizon_color = Color(0.55, 0.72, 0.88, 1)
+sun_angle_max = 35.0
 
 [sub_resource type="Sky" id="Sky_1"]
 sky_material = SubResource("ProceduralSkyMaterial_1")
@@ -15,39 +16,100 @@ sky_material = SubResource("ProceduralSkyMaterial_1")
 background_mode = 2
 sky = SubResource("Sky_1")
 ambient_light_source = 3
+fog_enabled = true
+fog_light_color = Color(0.68, 0.82, 0.95, 1)
+fog_density = 0.00018
+fog_sky_affect = 0.4
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_terrain"]
+noise_type = 3
+seed = 42
+frequency = 0.0018
+fractal_octaves = 5
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_terrain"]
+width = 512
+height = 512
+seamless = true
+noise = SubResource("FastNoiseLite_terrain")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_world"]
+albedo_color = Color(0.22, 0.42, 0.24, 1)
+albedo_texture = SubResource("NoiseTexture2D_terrain")
+uv1_scale = Vector3(60, 60, 60)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_world"]
+size = Vector2(40000, 40000)
+
+[sub_resource type="BoxMesh" id="BoxMesh_runway"]
+size = Vector3(45, 0.4, 1800)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_runway"]
+albedo_color = Color(0.14, 0.15, 0.17, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mountain"]
+size = Vector3(1800, 650, 1800)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mountain"]
+albedo_color = Color(0.32, 0.36, 0.33, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_jet"]
-size = Vector3(3, 1, 4)
+size = Vector3(4, 1.2, 6)
 
-[sub_resource type="PrismMesh" id="PrismMesh_fuselage"]
-size = Vector3(1.2, 4.5, 0.8)
+[sub_resource type="PrismMesh" id="PrismMesh_nose"]
+size = Vector3(1.4, 6.8, 1.0)
 
-[sub_resource type="BoxMesh" id="BoxMesh_wings"]
-size = Vector3(5.5, 0.1, 1.4)
+[sub_resource type="BoxMesh" id="BoxMesh_delta_wings"]
+size = Vector3(8.5, 0.12, 2.4)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jet"]
-albedo_color = Color(0.35, 0.4, 0.46, 1)
+[sub_resource type="BoxMesh" id="BoxMesh_tail_fins"]
+size = Vector3(0.12, 1.5, 1.4)
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
-size = Vector2(4000, 4000)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jet_body"]
+albedo_color = Color(0.32, 0.37, 0.44, 1)
+metallic = 0.4
+roughness = 0.35
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
-albedo_color = Color(0.18, 0.36, 0.2, 1)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_canopy"]
+albedo_color = Color(0.1, 0.25, 0.45, 1)
+metallic = 0.8
+roughness = 0.1
 
 [node name="Main" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_1")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.866, -0.353, 0.353, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 100, 0)
+[node name="SunLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.353, 0.353, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 500, 0)
+light_energy = 1.2
 
-[node name="Ground" type="MeshInstance3D" parent="."]
-mesh = SubResource("PlaneMesh_ground")
-surface_material_override/0 = SubResource("StandardMaterial3D_ground")
+[node name="WorldGround" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_world")
+surface_material_override/0 = SubResource("StandardMaterial3D_world")
+
+[node name="AirportRunway" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, -600)
+mesh = SubResource("BoxMesh_runway")
+surface_material_override/0 = SubResource("StandardMaterial3D_runway")
+
+[node name="MountainRange1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.866, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866, -3200, 280, -5500)
+mesh = SubResource("BoxMesh_mountain")
+surface_material_override/0 = SubResource("StandardMaterial3D_mountain")
+
+[node name="MountainRange2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.707, 0, -0.707, 0, 1, 0, 0.707, 0, 0.707, 4200, 320, -7800)
+mesh = SubResource("BoxMesh_mountain")
+surface_material_override/0 = SubResource("StandardMaterial3D_mountain")
+
+[node name="MountainRange3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.965, 0, 0.258, 0, 1, 0, -0.258, 0, 0.965, 500, 380, -12000)
+mesh = SubResource("BoxMesh_mountain")
+surface_material_override/0 = SubResource("StandardMaterial3D_mountain")
 
 [node name="Jet" type="CharacterBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 80, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 350, 200)
 script = ExtResource("1_jet")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Jet"]
@@ -55,25 +117,69 @@ shape = SubResource("BoxShape3D_jet")
 
 [node name="Fuselage" type="MeshInstance3D" parent="Jet"]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
-mesh = SubResource("PrismMesh_fuselage")
-surface_material_override/0 = SubResource("StandardMaterial3D_jet")
+mesh = SubResource("PrismMesh_nose")
+surface_material_override/0 = SubResource("StandardMaterial3D_jet_body")
 
-[node name="Wings" type="MeshInstance3D" parent="Jet"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.4)
-mesh = SubResource("BoxMesh_wings")
-surface_material_override/0 = SubResource("StandardMaterial3D_jet")
+[node name="Canopy" type="MeshInstance3D" parent="Jet"]
+transform = Transform3D(0.55, 0, 0, 0, -2.62268e-08, 0.45, 0, -0.6, -1.96701e-08, 0, 0.45, -0.8)
+mesh = SubResource("PrismMesh_nose")
+surface_material_override/0 = SubResource("StandardMaterial3D_canopy")
+
+[node name="MainWings" type="MeshInstance3D" parent="Jet"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.6)
+mesh = SubResource("BoxMesh_delta_wings")
+surface_material_override/0 = SubResource("StandardMaterial3D_jet_body")
+
+[node name="LeftTailFin" type="MeshInstance3D" parent="Jet"]
+transform = Transform3D(0.939, -0.342, 0, 0.342, 0.939, 0, 0, 0, 1, -0.65, 0.7, 2.3)
+mesh = SubResource("BoxMesh_tail_fins")
+surface_material_override/0 = SubResource("StandardMaterial3D_jet_body")
+
+[node name="RightTailFin" type="MeshInstance3D" parent="Jet"]
+transform = Transform3D(0.939, 0.342, 0, -0.342, 0.939, 0, 0, 0, 1, 0.65, 0.7, 2.3)
+mesh = SubResource("BoxMesh_tail_fins")
+surface_material_override/0 = SubResource("StandardMaterial3D_jet_body")
 
 [node name="Camera3D" type="Camera3D" parent="Jet"]
-transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 2.6, 8.5)
-far = 4000.0
+transform = Transform3D(1, 0, 0, 0, 0.97437, 0.224951, 0, -0.224951, 0.97437, 0, 2.8, 10.5)
+far = 35000.0
 
 [node name="HUD" type="CanvasLayer" parent="."]
 
-[node name="InfoLabel" type="Label" parent="HUD"]
+[node name="TelemetryLabel" type="Label" parent="HUD"]
 offset_left = 20.0
 offset_top = 20.0
-offset_right = 450.0
-offset_bottom = 140.0
-theme_override_colors/font_color = Color(0.2, 1, 0.3, 1)
-theme_override_font_sizes/font_size = 18
-text = "LOADING HUD..."
+offset_right = 460.0
+offset_bottom = 260.0
+theme_override_colors/font_color = Color(0.15, 1, 0.35, 1)
+theme_override_font_sizes/font_size = 17
+text = "INITIALIZING AVIONICS..."
+
+[node name="CrosshairLabel" type="Label" parent="HUD"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -40.0
+offset_top = -20.0
+offset_right = 40.0
+offset_bottom = 20.0
+theme_override_colors/font_color = Color(0.15, 1, 0.35, 0.85)
+theme_override_font_sizes/font_size = 24
+text = "--( + )--"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="WarningLabel" type="Label" parent="HUD"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -260.0
+offset_top = 40.0
+offset_right = 260.0
+offset_bottom = 85.0
+theme_override_colors/font_color = Color(1, 0.25, 0.2, 1)
+theme_override_font_sizes/font_size = 20
+text = ""
+horizontal_alignment = 1
