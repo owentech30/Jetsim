@@ -92,7 +92,7 @@ func _ready() -> void:
 	_cy(self, 0.65, 0.82, 6.2, Vector3(0, 0, 0.4), hull, Vector3(90, 0, 0))
 	_cy(self, 0.02, 0.65, 3.4, Vector3(0, -0.05, -4.4), trim, Vector3(90, 0, 0))
 	_cy(self, 0.32, 0.48, 2.6, Vector3(0, 0.55, -1.7), gls, Vector3(84, 0, 0))
-	_pr(self, Vector3(1.5, 3.8, 0.85), Vector3(0, 0.25, -2.2), hull, Vector3(-90, 0, 0))
+	_pr(self, 1.5, 3.8, 0.85, Vector3(0, 0.25, -2.2), hull, Vector3(-90, 0, 0))
 	_bx(self, Vector3(0.75, 0.45, 3.8), Vector3(0, 0.45, 1.1), hull)
 
 	for s in [-1.0, 1.0]:
@@ -118,7 +118,7 @@ func _ready() -> void:
 	_bx(dash, Vector3(0.95, 0.35, 0.6), Vector3(0, 0.32, -2.3), drk)
 
 	cam = Camera3D.new()
-	cam.far = 65000.0
+	cam.far = 15000.0
 	add_child(cam)
 
 	var cv = CanvasLayer.new()
@@ -129,7 +129,7 @@ func _ready() -> void:
 	_lb(cv, Control.PRESET_CENTER, Vector4(-60, -20, 60, 20), g, 24, HORIZONTAL_ALIGNMENT_CENTER).text = "---( + )---"
 	hw = _lb(cv, Control.PRESET_CENTER_TOP, Vector4(-300, 36, 300, 85), Color(1, 0.25, 0.2), 20, HORIZONTAL_ALIGNMENT_CENTER)
 
-	var wr = get_parent()
+	var wr = get_tree().root
 	var rng = RandomNumberGenerator.new()
 	rng.seed = 1337
 	var sm = ProceduralSkyMaterial.new()
